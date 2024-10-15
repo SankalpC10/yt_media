@@ -25,7 +25,7 @@ This Python application extracts data from a specified YouTube channel, includin
     ```bash
     pip install -r requirements.txt
     ```
-3. **Authentication**
+3. **Authentication**:
     By API KEY - Environment Variables:
     Create a .env file and add your YouTube Data API key:
     ```bash
