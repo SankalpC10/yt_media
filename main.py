@@ -26,14 +26,14 @@ def main():
     api_version = "v3"
     client_secrets_file = "client_secret_yt_media.json"
 
-    # Method 1: Oauth Flow - More secure but slower
+    ## Method 1: Oauth Flow - More secure but slower
     flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(
         client_secrets_file, scopes)
     credentials = flow.run_console()
     youtube = googleapiclient.discovery.build(
         api_service_name, api_version, credentials=credentials)
 
-    # Method 2:API Key Flow -- Faster but requires API key
+    ## Method 2:API Key Flow -- Faster but requires API key
     # youtube = googleapiclient.discovery.build(api_service_name, api_version, developerKey=API_KEY)
 
     channel_url = input("Enter the YouTube channel URL (e.g., https://www.youtube.com/@channel_name): ") #example: https://www.youtube.com/@GoQuest_Media ; https://www.youtube.com/@Fireship
