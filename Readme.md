@@ -49,7 +49,7 @@ This Python application extracts data from a specified YouTube channel, includin
 
 5. **Configuration** :
 The script supports two authentication methods:
-- OAuth Flow (recommended for more secure access): It will prompt you to authenticate via Google when running.
+- OAuth Flow (recommended for more secure access): Currently implemented: It will prompt you to authenticate via Google when running.
 - API Key Flow (faster, but requires API key setup): Uncomment the relevant lines in main.py and comment out the OAuth sections.
 
 6. **Files** :
