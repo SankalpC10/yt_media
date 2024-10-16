@@ -59,3 +59,6 @@ The script supports two authentication methods:
 
 7. **Error Handling** : 
 The script includes error handling for common API issues, such as invalid credentials and quota limits. If an error occurs, the script will display an error message in the console and proceed to the next item.
+
+# Resources
+https://developers.google.com/youtube/v3
