@@ -2,6 +2,7 @@ import pandas as pd
 import isodate
 import googleapiclient.discovery
 import googleapiclient.errors
+from datetime import datetime
 
 def fetch_videos_data(youtube, channel_id):
     videos_data = []
@@ -44,6 +45,7 @@ def fetch_videos_data(youtube, channel_id):
 
     return videos_data
 
+
 def fetch_comments_data(youtube, videos_data):
     comments_data = []
     total_comments = 0
@@ -56,52 +58,64 @@ def fetch_comments_data(youtube, videos_data):
             comments_request = youtube.commentThreads().list(
                 part="snippet,replies",
                 videoId=video['Video ID'],
-                maxResults=min(100 - total_comments, 100)
+                maxResults=100,
+                order="time"  # sort by date
             )
-            comments_response = comments_request.execute()
+            while comments_request and total_comments < 100:
+                comments_response = comments_request.execute()
 
-            for item in comments_response['items']:
-                comment = item['snippet']['topLevelComment']['snippet']
-                comment_data = {
-                    'Video ID': video['Video ID'],
-                    'Comment ID': item['id'],
-                    'Comment text': comment['textDisplay'],
-                    'Author name': comment['authorDisplayName'],
-                    'Published date': comment['publishedAt'],
-                    'Like count': comment['likeCount'],
-                    'Reply to': ''
-                }
-                comments_data.append(comment_data)
-                total_comments += 1
+                for item in comments_response['items']:
+                    if total_comments >= 100:
+                        break
 
-                if 'replies' in item:
-                    for reply in item['replies']['comments']:
-                        reply_data = {
-                            'Video ID': video['Video ID'],
-                            'Comment ID': reply['id'],
-                            'Comment text': reply['snippet']['textDisplay'],
-                            'Author name': reply['snippet']['authorDisplayName'],
-                            'Published date': reply['snippet']['publishedAt'],
-                            'Like count': reply['snippet']['likeCount'],
-                            'Reply to': item['id']
-                        }
-                        comments_data.append(reply_data)
-                        total_comments += 1
+                    comment = item['snippet']['topLevelComment']['snippet']
+                    comment_data = {
+                        'Video ID': video['Video ID'],
+                        'Comment ID': item['id'],
+                        'Comment text': comment['textDisplay'],
+                        'Author name': comment['authorDisplayName'],
+                        'Published date': comment['publishedAt'],
+                        'Like count': comment['likeCount'],
+                        'Reply to': ''
+                    }
+                    comments_data.append(comment_data)
+                    total_comments += 1
 
-                if total_comments >= 100:
-                    break
+                    # Process replies if available and within the limit
+                    if 'replies' in item:
+                        for reply in item['replies']['comments']:
+                            if total_comments >= 100:
+                                break
+                            reply_data = {
+                                'Video ID': video['Video ID'],
+                                'Comment ID': reply['id'],
+                                'Comment text': reply['snippet']['textDisplay'],
+                                'Author name': reply['snippet']['authorDisplayName'],
+                                'Published date': reply['snippet']['publishedAt'],
+                                'Like count': reply['snippet']['likeCount'],
+                                'Reply to': item['id']
+                            }
+                            comments_data.append(reply_data)
+                            total_comments += 1
+
+                # Handle pagination
+                comments_request = youtube.commentThreads().list_next(comments_request, comments_response)
 
         except googleapiclient.errors.HttpError as e:
             print(f"An error occurred while fetching comments for video {video['Video ID']}: {e}")
             continue
-
+    comments_data = sorted(
+        comments_data,
+        key=lambda x: datetime.strptime(x['Published date'], '%Y-%m-%dT%H:%M:%SZ'),
+        reverse=True
+    )
     return comments_data
+
 
 def write_to_excel(videos_data, comments_data):
     with pd.ExcelWriter('youtube_channel_data.xlsx') as writer:
         videos_df = pd.DataFrame(videos_data)
         videos_df.to_excel(writer, sheet_name='Video Data', index=False)
-
         comments_df = pd.DataFrame(comments_data)
         comments_df.to_excel(writer, sheet_name='Comments Data', index=False)
 

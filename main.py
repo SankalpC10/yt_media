@@ -3,7 +3,6 @@ import google_auth_oauthlib.flow
 import googleapiclient.discovery
 import googleapiclient.errors
 from google.oauth2.credentials import Credentials
-from datetime import datetime, timezone
 from utils import fetch_videos_data,fetch_comments_data, write_to_excel
 from dotenv import load_dotenv
 
@@ -59,7 +58,7 @@ def main():
         # Fetch comments data
         comments_data = fetch_comments_data(youtube, videos_data)
 
-        # Write data to Excel
+        # Write data to Excel file
         write_to_excel(videos_data, comments_data)
 
     except googleapiclient.errors.HttpError as e:
